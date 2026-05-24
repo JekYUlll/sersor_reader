@@ -1,9 +1,9 @@
+import argparse
 import json
 import minimalmodbus
 import serial.tools.list_ports
 import time
 
-PORT = "/dev/ttyUSB1"
 BAUDRATE = 19200
 SLAVE_ADDRESS = 1
 
@@ -36,9 +36,9 @@ def list_ports():
     for p in serial.tools.list_ports.comports():
         print(f"{p.device} — {p.description}")
 
-def make_instrument(port: str) -> minimalmodbus.Instrument:
-    inst = minimalmodbus.Instrument(port, SLAVE_ADDRESS)
-    inst.serial.baudrate = BAUDRATE
+def make_instrument(port: str, baud: int = BAUDRATE, slave: int = SLAVE_ADDRESS) -> minimalmodbus.Instrument:
+    inst = minimalmodbus.Instrument(port, slave)
+    inst.serial.baudrate = baud
     inst.serial.bytesize = 8
     inst.serial.parity = minimalmodbus.serial.PARITY_NONE
     inst.serial.stopbits = 1
@@ -72,7 +72,17 @@ def poll_loop(inst: minimalmodbus.Instrument, interval: int = 10):
             time.sleep(interval)
 
 if __name__ == "__main__":
-    list_ports()
-    inst = make_instrument(PORT)
-    print(f"Opened {PORT} @ {BAUDRATE} baud, slave={SLAVE_ADDRESS}\n")
+    parser = argparse.ArgumentParser(description="Read Modbus station data over serial.")
+    parser.add_argument("--port", help="Serial port, for example COM4 or /dev/ttyUSB1")
+    parser.add_argument("--baud", type=int, default=BAUDRATE, help=f"Baud rate (default: {BAUDRATE})")
+    parser.add_argument("--slave", type=int, default=SLAVE_ADDRESS, help=f"Slave address (default: {SLAVE_ADDRESS})")
+    args = parser.parse_args()
+
+    if not args.port:
+        print("Available serial ports:")
+        list_ports()
+        parser.error("please specify a serial port with --port")
+
+    inst = make_instrument(args.port, baud=args.baud, slave=args.slave)
+    print(f"Opened {args.port} @ {args.baud} baud, slave={args.slave}\n")
     poll_loop(inst, interval=10)

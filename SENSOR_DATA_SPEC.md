@@ -19,16 +19,16 @@
 └─────────────────────────────────────────────────────┘
 ```
 
-| 属性 | Parsivel2 | Modbus 气象站 |
-|------|-----------|---------------|
-| 接口 | RS485 (半双工) | RS485 (半双工) |
-| USB 适配器 | CH341 (QinHeng) | CH341 (QinHeng) |
-| 波特率 | 9600 | 19200 |
-| 数据位/校验/停止位 | 8N1 | 8N1 |
-| 协议 | ASCII 文本 (CS/PA 命令) | Modbus RTU |
-| 轮询间隔 | 5 s | 10 s |
-| 输出格式 | JSON Lines | JSON Lines |
-| 传感器类型 | 激光雨滴谱仪 (Disdrometer) | 多参数气象站 |
+| 属性               | Parsivel2                  | Modbus 气象站   |
+| ------------------ | -------------------------- | --------------- |
+| 接口               | RS485 (半双工)             | RS485 (半双工)  |
+| USB 适配器         | CH341 (QinHeng)            | CH341 (QinHeng) |
+| 波特率             | 9600                       | 19200           |
+| 数据位/校验/停止位 | 8N1                        | 8N1             |
+| 协议               | ASCII 文本 (CS/PA 命令)    | Modbus RTU      |
+| 轮询间隔           | 5 s                        | 10 s            |
+| 输出格式           | JSON Lines                 | JSON Lines      |
+| 传感器类型         | 激光雨滴谱仪 (Disdrometer) | 多参数气象站    |
 
 ---
 
@@ -40,16 +40,16 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
 
 **核心参数：**
 
-| 参数 | 值 |
-|------|-----|
-| 测量面积 | 54 cm² (180 mm × 30 mm) |
-| 粒径范围 | 0.2 – 25 mm (32 个非等间距等级) |
-| 速度范围 | 0.2 – 20 m/s (32 个非等间距等级) |
-| 降水类型分类 | SYN/METAR/NWS 三种天气码 |
-| 雷达反射率 | –9.999 – 99.999 dBz |
-| 能见度 (MOR) | 0 – 20000 m |
-| 供电 | 7 – 30 VDC (典型 12V, 加热时 24V) |
-| 固件 | 2.11.11 / DSP 2.11.1 |
+| 参数         | 值                                |
+| ------------ | --------------------------------- |
+| 测量面积     | 54 cm² (180 mm × 30 mm)           |
+| 粒径范围     | 0.2 – 25 mm (32 个非等间距等级)   |
+| 速度范围     | 0.2 – 20 m/s (32 个非等间距等级)  |
+| 降水类型分类 | SYN/METAR/NWS 三种天气码          |
+| 雷达反射率   | –9.999 – 99.999 dBz               |
+| 能见度 (MOR) | 0 – 20000 m                       |
+| 供电         | 7 – 30 VDC (典型 12V, 加热时 24V) |
+| 固件         | 2.11.11 / DSP 2.11.1              |
 
 ### 2.2 数据形状
 
@@ -111,48 +111,48 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
 
 **Type 1 字段释义：**
 
-| 字段 | 类型 | 单位 | 说明 |
-|------|------|------|------|
-| `telegram_id` | string | — | 传感器型号标识，固定 `"TYP OP4A"` |
-| `rain_intensity` | float | mm/h | 降雨强度 (分辨率 0.001) |
-| `rain_amount` | float | mm | 累积降雨量 (分辨率 0.01) |
-| `weather_syn_present` | int | code | SYNOP 当前天气码 (4677 表) |
-| `weather_syn_past` | int | code | SYNOP 过去天气码 |
-| `weather_metar` | string | code | METAR/SPECI 天气类型 (2 字符) |
-| `weather_nws` | string | code | NWS 天气类型 (1 字符) |
-| `radar_reflectivity` | float or null | dBz | 雷达反射率。原始值 `–9.999` 表示无数据 → JSON 中为 `null` |
-| `mor_visibility` | int | m | 气象光学能见度 (MOR), 0–20000 |
-| `laser_band_amplitude` | int | — | 激光波段信号幅度 (传感器健康指标) |
-| `sensor_temp` | float | °C | 传感器内部温度 (分辨率 0.001) |
-| `particle_count` | int | — | 当前采样周期内检测到的粒子总数 |
-| `heating_current` | int | — | 加热电流状态值 |
-| `serial_number` | int | — | 传感器序列号 |
-| `firmware_version` | string | — | 固件版本 |
-| `dsp_version` | string | — | DSP 固件版本 |
-| `sensor_head_fw` | string | — | 探头端固件版本 |
-| `supply_voltage` | float | V | 供电电压 |
-| `heating_state` | int | — | 加热状态: 0=关闭, 1=低功率, 2=高功率 |
-| `time_str` | string | — | 传感器内部时间 (HH:MM:SS) |
-| `date_str` | string | — | 传感器内部日期 (DD:MM:YY) |
-| `calib_date` | string | — | 传感器标定日期 |
-| `sensor_head_calib_date` | string | — | 探头标定日期 |
-| `sensor_head_sn` | string | — | 探头序列号 |
-| `rain_intensity_hires` | float | mm/h | 高分辨率雨强 (分辨率 0.01) |
-| `sensor_status` | int | — | 传感器总状态字 (0=正常) |
-| `laser_status` | int | — | 激光状态 (见注) |
-| `optics_status` | int | — | 光学系统状态 (见注) |
-| `temp_status` | int | — | 温度状态 (见注) |
-| `precip_intensity` | float | mm/h | 降水强度 (高精度, 分辨率 0.001) |
-| `precip_amount` | float | mm | 累积降水量 (高精度, 分辨率 0.01) |
-| `precip_type` | string | — | 降水类型代码 |
-| `precip_type_metar` | string | — | METAR 降水类型代码 |
-| `precip_intensity_2` | float | mm/h | 降水强度 (另一个精度等级) |
-| `precip_amount_2` | float | mm | 降水量 (另一个精度等级) |
-| `mor_visibility_rain` | int | m | 雨中能见度 (MOR) |
-| `mor_visibility_snow` | int | m | 雪中能见度 (MOR) |
-| `status_word_hex` | string | — | 状态字 (16 进制) |
-| `error_code` | int | — | 错误码 (0=正常) |
-| `snow_intensity` | array[float\|null] | mm/h | 雪强 (3 个值对应不同降雪类型)。`null` = 无数据 |
+| 字段                     | 类型               | 单位 | 说明                                                      |
+| ------------------------ | ------------------ | ---- | --------------------------------------------------------- |
+| `telegram_id`            | string             | —    | 传感器型号标识，固定 `"TYP OP4A"`                         |
+| `rain_intensity`         | float              | mm/h | 降雨强度 (分辨率 0.001)                                   |
+| `rain_amount`            | float              | mm   | 累积降雨量 (分辨率 0.01)                                  |
+| `weather_syn_present`    | int                | code | SYNOP 当前天气码 (4677 表)                                |
+| `weather_syn_past`       | int                | code | SYNOP 过去天气码                                          |
+| `weather_metar`          | string             | code | METAR/SPECI 天气类型 (2 字符)                             |
+| `weather_nws`            | string             | code | NWS 天气类型 (1 字符)                                     |
+| `radar_reflectivity`     | float or null      | dBz  | 雷达反射率。原始值 `–9.999` 表示无数据 → JSON 中为 `null` |
+| `mor_visibility`         | int                | m    | 气象光学能见度 (MOR), 0–20000                             |
+| `laser_band_amplitude`   | int                | —    | 激光波段信号幅度 (传感器健康指标)                         |
+| `sensor_temp`            | float              | °C   | 传感器内部温度 (分辨率 0.001)                             |
+| `particle_count`         | int                | —    | 当前采样周期内检测到的粒子总数                            |
+| `heating_current`        | int                | —    | 加热电流状态值                                            |
+| `serial_number`          | int                | —    | 传感器序列号                                              |
+| `firmware_version`       | string             | —    | 固件版本                                                  |
+| `dsp_version`            | string             | —    | DSP 固件版本                                              |
+| `sensor_head_fw`         | string             | —    | 探头端固件版本                                            |
+| `supply_voltage`         | float              | V    | 供电电压                                                  |
+| `heating_state`          | int                | —    | 加热状态: 0=关闭, 1=低功率, 2=高功率                      |
+| `time_str`               | string             | —    | 传感器内部时间 (HH:MM:SS)                                 |
+| `date_str`               | string             | —    | 传感器内部日期 (DD:MM:YY)                                 |
+| `calib_date`             | string             | —    | 传感器标定日期                                            |
+| `sensor_head_calib_date` | string             | —    | 探头标定日期                                              |
+| `sensor_head_sn`         | string             | —    | 探头序列号                                                |
+| `rain_intensity_hires`   | float              | mm/h | 高分辨率雨强 (分辨率 0.01)                                |
+| `sensor_status`          | int                | —    | 传感器总状态字 (0=正常)                                   |
+| `laser_status`           | int                | —    | 激光状态 (见注)                                           |
+| `optics_status`          | int                | —    | 光学系统状态 (见注)                                       |
+| `temp_status`            | int                | —    | 温度状态 (见注)                                           |
+| `precip_intensity`       | float              | mm/h | 降水强度 (高精度, 分辨率 0.001)                           |
+| `precip_amount`          | float              | mm   | 累积降水量 (高精度, 分辨率 0.01)                          |
+| `precip_type`            | string             | —    | 降水类型代码                                              |
+| `precip_type_metar`      | string             | —    | METAR 降水类型代码                                        |
+| `precip_intensity_2`     | float              | mm/h | 降水强度 (另一个精度等级)                                 |
+| `precip_amount_2`        | float              | mm   | 降水量 (另一个精度等级)                                   |
+| `mor_visibility_rain`    | int                | m    | 雨中能见度 (MOR)                                          |
+| `mor_visibility_snow`    | int                | m    | 雪中能见度 (MOR)                                          |
+| `status_word_hex`        | string             | —    | 状态字 (16 进制)                                          |
+| `error_code`             | int                | —    | 错误码 (0=正常)                                           |
+| `snow_intensity`         | array[float\|null] | mm/h | 雪强 (3 个值对应不同降雪类型)。`null` = 无数据            |
 
 > **传感器状态字段 (sensor_status)**: 每位代表一个子系统。第 0 位=激光, 第 1 位=光学, 第 2 位=温度, 第 3 位=加热, 第 4 位=DSP。0 表示正常。
 >
@@ -170,7 +170,9 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
   "sensor": "parsivel2",
   "type": "type2",
   "data": {
-    "psd_size_classes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "psd_size_classes": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
     "psd_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     "psd_particles": [0, 0, 0, 0, 0, 0, 0],
     "reserved_97": "",
@@ -182,24 +184,24 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
 
 **Type 2 字段释义：**
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `psd_size_classes` | array[int] (22) | 各粒径等级的粒子计数 (4 位 16 进制原始值 → JSON 整数)。无降水时全部为 0 |
-| `psd_velocity` | array[float] (7) | 各速度等级的值 (m/s) |
-| `psd_particles` | array[int] (7) | 各速度等级的粒子计数。无降水时全部为 0 |
+| 字段               | 类型             | 说明                                                                    |
+| ------------------ | ---------------- | ----------------------------------------------------------------------- |
+| `psd_size_classes` | array[int] (22)  | 各粒径等级的粒子计数 (4 位 16 进制原始值 → JSON 整数)。无降水时全部为 0 |
+| `psd_velocity`     | array[float] (7) | 各速度等级的值 (m/s)                                                    |
+| `psd_particles`    | array[int] (7)   | 各速度等级的粒子计数。无降水时全部为 0                                  |
 
 > **完整 PSD 矩阵**: Type 2 的 Line 94–96 是 32×32 粒子谱的**汇总数据**。原始 CS/PA 响应中, 前段的二进制数据 (在 Line 94 之前) 是 32×32 完整矩阵 — 每行 32 个 16 进制 4 位数, 代表"粒径 × 速度"交叉格的粒子计数。当前解析器提取了 Summary 部分; 完整矩阵可从 raw 数据中额外解码。
 
 ### 2.3 Weather 代码速查
 
-| `weather_metar` | `weather_nws` | 含义 |
-|-----------------|---------------|------|
-| `"NP"` | `"C"` | 无降水 / 晴天 (No Precipitation / Clear) |
-| `"RA"` | `"R"` | 雨 (Rain) |
-| `"SN"` | `"S"` | 雪 (Snow) |
-| `"DZ"` | `"D"` | 毛毛雨 (Drizzle) |
-| `"GR"` | `"H"` | 冰雹 (Hail) |
-| `"GS"` | `"P"` | 霰 / 小冰雹 |
+| `weather_metar` | `weather_nws` | 含义                                     |
+| --------------- | ------------- | ---------------------------------------- |
+| `"NP"`          | `"C"`         | 无降水 / 晴天 (No Precipitation / Clear) |
+| `"RA"`          | `"R"`         | 雨 (Rain)                                |
+| `"SN"`          | `"S"`         | 雪 (Snow)                                |
+| `"DZ"`          | `"D"`         | 毛毛雨 (Drizzle)                         |
+| `"GR"`          | `"H"`         | 冰雹 (Hail)                              |
+| `"GS"`          | `"P"`         | 霰 / 小冰雹                              |
 
 ### 2.4 轮询时序
 
@@ -255,29 +257,29 @@ t=15   CS/PA → Type 2 (PSD)          ← 5s
 
 ### 3.3 字段释义
 
-| 字段 | 类型 | 单位 | Modbus 寄存器 (0-based) | 说明 |
-|------|------|------|--------------------------|------|
-| `Batt_volt_Min` | float | V | 0 | 电池最低电压 |
-| `PTemp` | float | °C | 2 | 面板/处理器温度 |
-| `WD` | float | ° (度) | 4 | 风向 (0–360°, 气象学角度) |
-| `WS_Avg` | float | m/s | 6 | 平均风速 |
-| `Airtemp_Avg` | float | °C | 8 | 空气温度 |
-| `RH_Avg` | float | % | 10 | 相对湿度 |
-| `BP_Avg` | float | hPa | 12 | 大气压 |
-| `Dew_temp_Avg` | float | °C | 14 | 露点温度 |
-| `LPS_GHI_Avg` | float | W/m² | 16 | 太阳总辐射 (GHI) 平均值 |
-| `LPS_GHI_Max` | float | W/m² | 18 | 太阳总辐射最大值 |
-| `Flux_min` | float | g/m²/s | 20 | 沉积通量最小值 |
-| `Flux_avg` | float | g/m²/s | 22 | 沉积通量平均值 |
-| `Flux_max` | float | g/m²/s | 24 | 沉积通量最大值 |
-| `Flux_std` | float | g/m²/s | 26 | 沉积通量标准差 |
-| `Flux_cum` | float | g/m²/s | 28 | 沉积通量累积值 |
-| `wind_min` | float | km/h | 30 | 最小风速 |
-| `wind_avg` | float | km/h | 32 | 平均风速 (km/h) |
-| `wind_max` | float | km/h | 34 | 最大风速 (阵风) |
-| `TargetmV_Avg` | float | mV | 36 | 目标电压 (辐射相关) |
-| `DetectorTC_Avg` | float | °C | 38 | 探测器热电偶温度 |
-| `TargetTC_Avg` | float | °C | 40 | 目标热电偶温度 |
+| 字段             | 类型  | 单位   | Modbus 寄存器 (0-based) | 说明                      |
+| ---------------- | ----- | ------ | ----------------------- | ------------------------- |
+| `Batt_volt_Min`  | float | V      | 0                       | 电池最低电压              |
+| `PTemp`          | float | °C     | 2                       | 面板/处理器温度           |
+| `WD`             | float | ° (度) | 4                       | 风向 (0–360°, 气象学角度) |
+| `WS_Avg`         | float | m/s    | 6                       | 平均风速                  |
+| `Airtemp_Avg`    | float | °C     | 8                       | 空气温度                  |
+| `RH_Avg`         | float | %      | 10                      | 相对湿度                  |
+| `BP_Avg`         | float | hPa    | 12                      | 大气压                    |
+| `Dew_temp_Avg`   | float | °C     | 14                      | 露点温度                  |
+| `LPS_GHI_Avg`    | float | W/m²   | 16                      | 太阳总辐射 (GHI) 平均值   |
+| `LPS_GHI_Max`    | float | W/m²   | 18                      | 太阳总辐射最大值          |
+| `Flux_min`       | float | g/m²/s | 20                      | 沉积通量最小值            |
+| `Flux_avg`       | float | g/m²/s | 22                      | 沉积通量平均值            |
+| `Flux_max`       | float | g/m²/s | 24                      | 沉积通量最大值            |
+| `Flux_std`       | float | g/m²/s | 26                      | 沉积通量标准差            |
+| `Flux_cum`       | float | g/m²/s | 28                      | 沉积通量累积值            |
+| `wind_min`       | float | km/h   | 30                      | 最小风速                  |
+| `wind_avg`       | float | km/h   | 32                      | 平均风速 (km/h)           |
+| `wind_max`       | float | km/h   | 34                      | 最大风速 (阵风)           |
+| `TargetmV_Avg`   | float | mV     | 36                      | 目标电压 (辐射相关)       |
+| `DetectorTC_Avg` | float | °C     | 38                      | 探测器热电偶温度          |
+| `TargetTC_Avg`   | float | °C     | 40                      | 目标热电偶温度            |
 
 ### 3.4 数据解读示例
 
@@ -297,20 +299,30 @@ t=15   CS/PA → Type 2 (PSD)          ← 5s
 两个采集脚本均输出 **JSON Lines** (`.jsonl`) 格式: 每行一条完整的 JSON 记录, 以换行符 `\n` 分隔。
 
 **Parsivel2 通用结构:**
+
 ```json
 {"timestamp": "<ISO8601>", "sensor": "parsivel2", "type": "type1|type2", "data": {...}}
 ```
+
 解析失败时:
+
 ```json
-{"timestamp": "...", "sensor": "parsivel2", "error": "parse_failed", "raw": "<truncated>"}
+{
+  "timestamp": "...",
+  "sensor": "parsivel2",
+  "error": "parse_failed",
+  "raw": "<truncated>"
+}
 ```
 
 **Modbus 通用结构:**
+
 ```json
 {"timestamp": "<ISO8601>", "sensor": "modbus", "data": {...}}
 ```
 
 **消费示例 (Python):**
+
 ```python
 import json
 with open("sensor_20260511_230113.jsonl") as f:
@@ -321,6 +333,7 @@ with open("sensor_20260511_230113.jsonl") as f:
 ```
 
 **消费示例 (Shell/jq):**
+
 ```bash
 # 提取 Parsivel2 的温度和天气
 grep '"type1"' sensor_*.jsonl | jq -r '[.timestamp, .data.sensor_temp, .data.weather_metar] | @tsv'
@@ -333,12 +346,12 @@ jq -r '[.timestamp, .data.WS_Avg, .data.WD] | @tsv' modbus_*.jsonl
 
 ## 5. 哨兵值与异常处理
 
-| 原始值 | JSON 表示 | 含义 |
-|--------|-----------|------|
-| `–9.999` | `null` | 无有效测量数据 (传感器未获取到此参数) |
-| `"ERR: ..."` | string `"ERR: ..."` | Modbus 寄存器读取异常 (通信超时/CRC 错误) |
-| 空字符串 `""` | `""` | 字段未配置或不可用 |
-| `parse_failed` | error record | Parsivel2 响应的 ASCII 数据无法被解析器识别 |
+| 原始值         | JSON 表示           | 含义                                        |
+| -------------- | ------------------- | ------------------------------------------- |
+| `–9.999`       | `null`              | 无有效测量数据 (传感器未获取到此参数)       |
+| `"ERR: ..."`   | string `"ERR: ..."` | Modbus 寄存器读取异常 (通信超时/CRC 错误)   |
+| 空字符串 `""`  | `""`                | 字段未配置或不可用                          |
+| `parse_failed` | error record        | Parsivel2 响应的 ASCII 数据无法被解析器识别 |
 
 > **哨兵值 –9.999**: Parsivel2 用此值表示"无效测量"。常见于无降水时的 `radar_reflectivity`、`snow_intensity` 等字段。解析器将其转换为 JSON `null` 以方便程序判断 (`if val is None`)。
 
@@ -346,10 +359,10 @@ jq -r '[.timestamp, .data.WS_Avg, .data.WD] | @tsv' modbus_*.jsonl
 
 ## 6. 文件清单
 
-| 文件 | 功能 |
-|------|------|
-| `read_sensor.py` | Parsivel2 主采集脚本 (ttyUSB0, 9600, 5s 间隔) |
-| `modbus_reader.py` | Modbus 气象站主采集脚本 (ttyUSB1, 19200, 10s 间隔) |
-| `parsivel2_parser.py` | CS/PA 报文解析器 (Type1/Type2 自动识别) |
-| `sensor_*.jsonl` | Parsivel2 输出日志 (JSON Lines, 自动轮转文件名含时间戳) |
-| `modbus_*.jsonl` | Modbus 输出日志 (JSON Lines, 自动轮转文件名含时间戳) |
+| 文件                  | 功能                                                    |
+| --------------------- | ------------------------------------------------------- |
+| `read_sensor.py`      | Parsivel2 主采集脚本 (ttyUSB0, 9600, 5s 间隔)           |
+| `modbus_reader.py`    | Modbus 气象站主采集脚本 (ttyUSB1, 19200, 10s 间隔)      |
+| `parsivel2_parser.py` | CS/PA 报文解析器 (Type1/Type2 自动识别)                 |
+| `sensor_*.jsonl`      | Parsivel2 输出日志 (JSON Lines, 自动轮转文件名含时间戳) |
+| `modbus_*.jsonl`      | Modbus 输出日志 (JSON Lines, 自动轮转文件名含时间戳)    |

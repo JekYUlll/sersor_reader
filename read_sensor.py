@@ -1,3 +1,4 @@
+import argparse
 import json
 import serial
 import serial.tools.list_ports
@@ -5,7 +6,6 @@ import time
 
 from parsivel2_parser import parse_telegram
 
-PORT = "/dev/ttyUSB0"
 BAUDRATE = 9600
 
 def list_ports():
@@ -23,7 +23,7 @@ def query(ser, cmd: str) -> str:
         return f"ERR: {e}"
 
 def poll_loop(ser, interval: int = 5):
-    log_path = time.strftime("sensor_%Y%m%d_%H%M%S.jsonl")
+    log_path = time.strftime("parsivel2_%Y%m%d_%H%M%S.jsonl")
     with open(log_path, "w") as f:
         print(f"Polling every {interval}s — logging to {log_path} — Ctrl+C to stop\n")
         while True:
@@ -43,8 +43,17 @@ def poll_loop(ser, interval: int = 5):
             time.sleep(interval)
 
 if __name__ == "__main__":
-    list_ports()
-    with serial.Serial(PORT, baudrate=BAUDRATE, bytesize=8,
+    parser = argparse.ArgumentParser(description="Read Parsivel2 data over serial.")
+    parser.add_argument("--port", help="Serial port, for example COM3 or /dev/ttyUSB0")
+    parser.add_argument("--baud", type=int, default=BAUDRATE, help=f"Baud rate (default: {BAUDRATE})")
+    args = parser.parse_args()
+
+    if not args.port:
+        print("Available serial ports:")
+        list_ports()
+        parser.error("please specify a serial port with --port")
+
+    with serial.Serial(args.port, baudrate=args.baud, bytesize=8,
                        parity="N", stopbits=1, timeout=1) as ser:
-        print(f"Opened {PORT} @ {BAUDRATE} baud\n")
+        print(f"Opened {args.port} @ {args.baud} baud\n")
         poll_loop(ser, interval=5)
