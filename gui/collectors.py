@@ -9,10 +9,15 @@ import minimalmodbus
 import serial
 from PySide6.QtCore import QThread, Signal
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from parsivel2_parser import parse_telegram
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+def _project_root() -> str:
+    # PyInstaller frozen: use directory containing the exe
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(__file__))
+
 
 MODBUS_FIELDS = [
     ("Batt_volt_Min",  0),
@@ -67,7 +72,7 @@ def _read_modbus(inst) -> dict:
 
 
 def _default_log_dir() -> str:
-    return os.path.join(PROJECT_ROOT, "logs")
+    return os.path.join(_project_root(), "logs")
 
 
 def _open_log_file(log_dir: str, prefix: str):
