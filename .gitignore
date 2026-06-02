@@ -8,6 +8,8 @@ wheels/
 *.txt
 *.jsonl
 *.csv
+*.zip
+reports/
 
 # Virtual environments
 .venv
