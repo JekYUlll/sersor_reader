@@ -11,5 +11,22 @@ wheels/
 *.zip
 reports/
 
+# Local planning, captures, vendor references, and target artifacts
+.planning/
+artifacts/
+industrial_pc_samples/
+raw_captures/
+tmp/
+txt
+
+# C reader build and runtime output
+c_reader/bin/
+c_reader/obj/
+c_reader/test-output/
+*.ko
+*.jsonl.active
+*.jsonl.gz
+*.sha256
+
 # Virtual environments
 .venv
