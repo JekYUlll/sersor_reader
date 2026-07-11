@@ -318,6 +318,7 @@ static void update_next_deadline(uint64_t *deadline_ns, uint64_t interval_ns) {
 static transaction_status_t run_p2_sample(reader_worker_t *worker,
                                           serial_port_t *port) {
     static const uint8_t request[] = {'C', 'S', '/', 'P', 'A', '\r'};
+    static const uint8_t response_header[] = "TYP OP4A";
     const p2_config_t *config = &worker->config->p2;
     uint8_t *response = calloc(config->max_response_bytes, 1U);
     serial_result_t serial_result;
@@ -349,6 +350,9 @@ static transaction_status_t run_p2_sample(reader_worker_t *worker,
         status = TXN_TIMEOUT;
     } else if (!serial_result.terminated) {
         status = *worker->stop_flag != 0 ? TXN_INTERRUPTED : TXN_SHORT_FRAME;
+    } else if (serial_result.response_length < sizeof(response_header) - 1U ||
+               memcmp(response, response_header, sizeof(response_header) - 1U) != 0) {
+        status = TXN_PROTOCOL_ERROR;
     } else {
         status = TXN_OK;
     }

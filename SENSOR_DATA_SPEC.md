@@ -13,9 +13,8 @@
 │  └─ /dev/ttyUSB1 ─── Modbus Weather Station          │
 │                        (CH341, 19200 8N1, Slave=1)   │
 │                                                       │
-│  采集脚本:                                             │
-│  ├─ read_sensor.py   → sensor_*.jsonl                │
-│  └─ modbus_reader.py → modbus_*.jsonl                │
+│  生产采集: c_reader/bin/aws-reader → raw/health JSONL │
+│  旧版工具: read_sensor.py / modbus_reader.py          │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -26,7 +25,7 @@
 | 波特率             | 9600                       | 19200           |
 | 数据位/校验/停止位 | 8N1                        | 8N1             |
 | 协议               | ASCII 文本 (CS/PA 命令)    | Modbus RTU      |
-| 轮询间隔           | 5 s                        | 10 s            |
+| 生产轮询间隔       | 10 s                       | 10 s            |
 | 输出格式           | JSON Lines                 | JSON Lines      |
 | 传感器类型         | 激光雨滴谱仪 (Disdrometer) | 多参数气象站    |
 
@@ -53,7 +52,7 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
 
 ### 2.2 数据形状
 
-每发送一次 `CS/PA`（Current Sample / Particles）命令，传感器返回两种数据页中的一种，两次命令交替出现：
+当前实机每次发送 `CS/PA`（Current Sample / Particles）后返回一条约 5189 bytes、以 ETX 结束的完整 OP4A 报文。报文同时包含 Type 1 元数据和 94-99 粒径/速度分布区，解析结果标记为 `type: "combined"`。旧版截断读取或其他固件也可能只出现其中一部分，因此解析器仍兼容独立 Type 1 / Type 2：
 
 #### Type 1 — 传感器状态与测量值
 
@@ -205,15 +204,7 @@ Parsivel2 是一款基于激光消光原理的光学雨滴谱仪 (Optical Disdro
 
 ### 2.4 轮询时序
 
-```
-t=0    CS/PA → Type 1 (metadata)     ← 5s
-t=5    CS/PA → Type 2 (PSD)          ← 5s
-t=10   CS/PA → Type 1 (metadata)     ← 5s
-t=15   CS/PA → Type 2 (PSD)          ← 5s
-...
-```
-
-每次查询只能获得一种数据页，传感器自动交替返回。如果需要同一时刻的完整数据 (Type1 + Type2), 可以将两个连续轮询的结果配对。
+生产程序每 10 秒发起一次查询。9600 baud 下完整帧实测约需 6.06 秒；程序要求报文从 `TYP OP4A` 开始并以 ETX 结束，7.5 秒总超时作为兜底。若只收到尾帧、半帧或超时，raw 仍保留，但状态分别标为 `protocol_error`、`short_frame`/`interrupted` 或 `timeout`。
 
 ---
 
@@ -296,7 +287,34 @@ t=15   CS/PA → Type 2 (PSD)          ← 5s
 
 ## 4. JSON Lines 格式规范
 
-两个采集脚本均输出 **JSON Lines** (`.jsonl`) 格式: 每行一条完整的 JSON 记录, 以换行符 `\n` 分隔。
+生产 C 程序和旧版 Python 工具均使用 **JSON Lines** (`.jsonl`)：每行一条完整 JSON 记录。
+
+**生产 raw canonical 结构 (`aws.raw.v1`)：**
+
+```json
+{
+  "schema": "aws.raw.v1",
+  "session_id": "<boot/session>",
+  "sensor": "parsivel2|modbus_rtu",
+  "sequence": 1,
+  "wall_time": "<UTC ISO8601 ns>",
+  "realtime_ns": 0,
+  "monotonic_ns": 0,
+  "status": "ok",
+  "device": "/dev/serial/by-id/...",
+  "baud": 9600,
+  "request_len": 6,
+  "request_hex": "43532f50410d",
+  "response_len": 5189,
+  "response_hex": "...完整字节的十六进制...",
+  "errno": 0,
+  "truncated": false
+}
+```
+
+raw 是回传和再解析的权威数据；health 只是端侧状态/预览。封存文件为 `.jsonl.gz`，只有同时存在并通过同名 `.sha256` 才可进入传输队列。远端使用 `c_reader/tools/decode_raw_data.py` 生成 `aws.parsed.v1`。
+
+**旧版 Python 已解析结构：**
 
 **Parsivel2 通用结构:**
 
@@ -363,6 +381,7 @@ jq -r '[.timestamp, .data.WS_Avg, .data.WD] | @tsv' modbus_*.jsonl
 | --------------------- | ------------------------------------------------------- |
 | `read_sensor.py`      | Parsivel2 主采集脚本 (ttyUSB0, 9600, 5s 间隔)           |
 | `modbus_reader.py`    | Modbus 气象站主采集脚本 (ttyUSB1, 19200, 10s 间隔)      |
-| `parsivel2_parser.py` | CS/PA 报文解析器 (Type1/Type2 自动识别)                 |
+| `c_reader/`           | RK3568 生产采集、健康检查和离线解码                    |
+| `parsivel2_parser.py` | CS/PA 报文解析器 (Type1/Type2/combined 自动识别)        |
 | `sensor_*.jsonl`      | Parsivel2 输出日志 (JSON Lines, 自动轮转文件名含时间戳) |
 | `modbus_*.jsonl`      | Modbus 输出日志 (JSON Lines, 自动轮转文件名含时间戳)    |

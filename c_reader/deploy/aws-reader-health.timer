@@ -1,0 +1,12 @@
+[Unit]
+Description=Run AWS sensor data validation every 15 minutes
+
+[Timer]
+OnActiveSec=5min
+OnUnitActiveSec=15min
+AccuracySec=1min
+RandomizedDelaySec=30s
+Unit=aws-reader-health.service
+
+[Install]
+WantedBy=timers.target

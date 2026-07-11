@@ -42,10 +42,15 @@ test: $(TARGET) $(TEST_PROTOCOL) $(TEST_CONFIG)
 	./$(TEST_PROTOCOL)
 	./$(TEST_CONFIG)
 	python3 tests/integration_mock.py ./$(TARGET)
+	python3 tests/test_health_checker.py tools/check_data_health.py
+	python3 tests/test_offline_decoder.py tools/decode_raw_data.py
 
 install: $(TARGET)
 	install -D -m 0755 $(TARGET) $(DESTDIR)/usr/local/bin/aws-reader
+	install -D -m 0755 tools/check_data_health.py $(DESTDIR)/usr/local/lib/aws-reader/check-data-health
 	install -D -m 0644 deploy/aws-reader.service $(DESTDIR)/etc/systemd/system/aws-reader.service
+	install -D -m 0644 deploy/aws-reader-health.service $(DESTDIR)/etc/systemd/system/aws-reader-health.service
+	install -D -m 0644 deploy/aws-reader-health.timer $(DESTDIR)/etc/systemd/system/aws-reader-health.timer
 	@if [ ! -e "$(DESTDIR)/etc/aws-reader.conf" ]; then \
 		install -D -m 0640 config/aws-reader.conf.example "$(DESTDIR)/etc/aws-reader.conf"; \
 	else \

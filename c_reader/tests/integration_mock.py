@@ -173,6 +173,57 @@ def test_partial_p2(binary: Path) -> None:
         assert bytes.fromhex(record["response_hex"]).endswith(b"without ETX")
 
 
+def test_misaligned_p2(binary: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="aws-reader-misaligned-") as temporary:
+        root = Path(temporary)
+        data_dir = root / "data"
+        master, slave = pty.openpty()
+        config = root / "reader.conf"
+        config.write_text(
+            "\n".join(
+                [
+                    f"data_dir={data_dir}",
+                    "required_mountpoint=",
+                    "min_free_mb=0",
+                    "compression_enabled=false",
+                    "p2_enabled=true",
+                    f"p2_device={os.ttyname(slave)}",
+                    "p2_interval_ms=500",
+                    "p2_timeout_ms=500",
+                    "p2_quiet_ms=100",
+                    "p2_max_response_bytes=8192",
+                    "modbus_enabled=false",
+                    "",
+                ]
+            ),
+            encoding="ascii",
+        )
+        errors: list[str] = []
+        server = threading.Thread(
+            target=serve_once,
+            args=(master, b"CS/PA\r", b"95:0.00;\r\n99:;\r\n\x03", errors),
+        )
+        server.start()
+        process = subprocess.run(
+            [str(binary), "--config", str(config), "--once"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5,
+        )
+        server.join(timeout=1)
+        os.close(master)
+        os.close(slave)
+        if errors:
+            raise AssertionError(errors)
+        if process.returncode == 0:
+            raise AssertionError("misaligned p2 tail unexpectedly returned success")
+        raw_path = next(data_dir.rglob("*parsivel2*.jsonl"))
+        record = json.loads(raw_path.read_text(encoding="utf-8").strip())
+        assert record["status"] == "protocol_error"
+        assert bytes.fromhex(record["response_hex"]).endswith(b"\x03")
+
+
 def test_serial_reconnect(binary: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="aws-reader-reconnect-") as temporary:
         root = Path(temporary)
@@ -308,6 +359,9 @@ def main() -> int:
         interrupted_dir.mkdir(parents=True)
         interrupted = interrupted_dir / "interrupted.jsonl.active"
         interrupted.write_bytes(b'{"partial":true')
+        monitor_history = data_dir / "monitor" / "history" / "keep.jsonl"
+        monitor_history.parent.mkdir(parents=True)
+        monitor_history.write_text('{"monitor":true}\n', encoding="ascii")
 
         p2_master, p2_slave = pty.openpty()
         modbus_master, modbus_slave = pty.openpty()
@@ -368,8 +422,11 @@ def main() -> int:
         assert modbus_health["preview"]["Dew_temp_Avg"] is None
         assert not interrupted.exists()
         assert invalid_lines == ['{"partial":true']
+        assert monitor_history.exists()
+        assert not Path(f"{monitor_history}.gz").exists()
 
     test_partial_p2(binary)
+    test_misaligned_p2(binary)
     test_serial_reconnect(binary)
     test_low_space_guard(binary)
     print("integration_mock: OK")

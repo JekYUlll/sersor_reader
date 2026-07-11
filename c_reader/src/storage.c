@@ -460,9 +460,11 @@ storage_manager_t *storage_manager_create(const reader_config_t *config,
     }
 
     recovery_manager = manager;
-    if (nftw(manager->data_dir, recover_callback, 16, FTW_PHYS) != 0) {
-        app_log("ERROR", "startup recovery scan failed for %s: %s",
-                manager->data_dir, strerror(errno));
+    if (nftw(raw_dir, recover_callback, 16, FTW_PHYS) != 0) {
+        app_log("ERROR", "startup recovery scan failed for %s: %s", raw_dir, strerror(errno));
+    }
+    if (nftw(health_dir, recover_callback, 16, FTW_PHYS) != 0) {
+        app_log("ERROR", "startup recovery scan failed for %s: %s", health_dir, strerror(errno));
     }
     recovery_manager = NULL;
     return manager;
