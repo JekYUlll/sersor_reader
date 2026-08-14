@@ -1,0 +1,23 @@
+[Unit]
+Description=AWS raw sensor acquisition service
+After=local-fs.target systemd-modules-load.service
+Wants=local-fs.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/local/bin/aws-reader --config /etc/aws-reader.conf
+Restart=always
+RestartSec=5
+WatchdogSec=60
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

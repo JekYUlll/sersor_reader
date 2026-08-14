@@ -1,0 +1,27 @@
+# AWS sensor reader configuration. Unknown keys are rejected.
+data_dir=/data/aws
+required_mountpoint=/data
+rotate_minutes=60
+sync_interval_sec=60
+min_free_mb=1024
+compression_enabled=true
+reconnect_delay_ms=2000
+
+p2_enabled=true
+p2_device=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
+p2_baud=9600
+p2_interval_ms=10000
+p2_timeout_ms=7500
+p2_quiet_ms=350
+p2_max_response_bytes=65536
+p2_direction_gpio=-1
+
+modbus_enabled=true
+modbus_device=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+modbus_baud=19200
+modbus_interval_ms=10000
+modbus_timeout_ms=1500
+modbus_slave=1
+modbus_start_register=0
+modbus_register_count=42
+modbus_direction_gpio=-1

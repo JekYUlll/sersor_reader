@@ -1,0 +1,18 @@
+[Unit]
+Description=Validate AWS sensor data and archives
+After=aws-reader.service
+RequiresMountsFor=/data/aws
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/aws-reader/check-data-health --data-dir /data/aws --mountpoint /data --service aws-reader.service --lookback-minutes 20 --min-samples 30 --min-success-ratio 0.95 --max-age-seconds 30 --archive-max-age-minutes 180 --require-device /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 --require-device /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 --output /data/aws/monitor/latest.json --history-dir /data/aws/monitor/history
+Nice=10
+IOSchedulingClass=idle
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

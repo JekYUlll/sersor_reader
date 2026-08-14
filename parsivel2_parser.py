@@ -1,5 +1,7 @@
 """Parsivel2 CS/PA telegram parser based on BA_Parsivel2_EN_70210002BE.pdf"""
 
+from __future__ import annotations
+
 import re
 
 # ── Field definitions: (field_number, name, scale_divisor, unit) ──
@@ -92,8 +94,14 @@ def parse_telegram(data: str) -> dict | None:
     has_typ = any("TYP" in line for line in lines)
     has_94 = any(re.match(r"^\s*94:", line) for line in lines)
 
+    # A complete OP4A response can contain both metadata and fields 94-99.
+    if has_typ and has_94:
+        type1 = _parse_type1(lines) or {}
+        type2 = _parse_type2(lines) or {}
+        result = {**type1, **type2, "type": "combined"}
+        return result if len(result) > 1 else None
     # Telegram type 1: structured metadata
-    if has_typ and not has_94:
+    if has_typ:
         return _parse_type1(lines)
     # Telegram type 2: particle size distribution
     elif has_94:
